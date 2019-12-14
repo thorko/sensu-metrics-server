@@ -1,3 +1,6 @@
+build:
+	env GOOS=linux GARCH=amd64 go build -o bin/getmetrics cmd/getmetrics.go
+
 release:
 	tar czf /tmp/sensu-metrics-server_${VERSION}_linux_amd64.tar.gz bin/ 
 	sum=$$(sha512sum /tmp/sensu-metrics-server_${VERSION}_linux_amd64.tar.gz | cut -d ' ' -f 1); \
