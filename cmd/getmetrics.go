@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/MiLk/kingpin"
 )
@@ -14,7 +16,8 @@ var (
 	url    string
 )
 
-func getMetrics(url string) {
+func getMetrics(url string, prefix string) {
+	date := int32(time.Now().Unix())
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Couldn't get url: %s", url)
@@ -22,9 +25,19 @@ func getMetrics(url string) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	// split into lines
-	lines := strings.Split(string(body), "\n")
-	for x := range lines {
-		fmt.Printf("line: %s\n", lines[x])
+	valid := regexp.MustCompile(`kube_metrics`)
+	if !valid.MatchString(string(body)) {
+		fmt.Println("couldn't find valid metrics!")
+		return
+	} else {
+		lines := strings.Split(string(body), "\n")
+		for x := range lines {
+			lines[x] = strings.ReplaceAll(lines[x], "{", ",")
+			lines[x] = strings.ReplaceAll(lines[x], "}", "")
+			parts := strings.Split(lines[x], " ")
+			fmt.Printf("%s%s value=%s %d", prefix, parts[0], parts[1], date)
+		}
+		return
 	}
 }
 
@@ -34,5 +47,5 @@ func main() {
 	kingpin.CommandLine.HelpFlag.Hidden()
 	kingpin.Parse()
 
-	getMetrics(url)
+	getMetrics(url, prefix)
 }
