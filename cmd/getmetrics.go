@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,7 +39,8 @@ func getMetrics(url string, prefix string) {
 				lines[x] = strings.Replace(lines[x], "}", "", -1)
 				parts := strings.Split(lines[x], " ")
 				if len(parts) >= 2 {
-					fmt.Printf("%s%s value=%s %d\n", prefix, parts[0], parts[1], date)
+					f, _ := strconv.ParseFloat(parts[1], 64)
+					fmt.Printf("%s%s value=%d %d\n", prefix, parts[0], int(f), date)
 				}
 			}
 		}
