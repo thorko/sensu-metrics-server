@@ -1,13 +1,5 @@
 build:
-	env GOOS=linux GARCH=amd64 go build -o bin/getmetrics cmd/getmetrics.go
-
-docker:
-	docker build -t getmetrics:${VERSION} .
-	docker run -d --name=getmetrics getmetrics:${VERSION}
-	docker cp getmetrics:/tmp/getmetrics ./bin/getmetrics
-	docker stop getmetrics
-	docker rm getmetrics
-	docker rmi --force getmetrics:${VERSION}
+	env CGO_ENABLED=0 GOOS=linux GARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o bin/getmetrics cmd/getmetrics.go
 
 release:
 	tar czf /tmp/sensu-metrics-server_${VERSION}_linux_amd64.tar.gz bin/ 

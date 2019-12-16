@@ -30,13 +30,16 @@ func getMetrics(url string, prefix string) {
 		fmt.Println("couldn't find valid metrics!")
 		return
 	} else {
+		comment := regexp.MustCompile(`^#`)
 		lines := strings.Split(string(body), "\n")
 		for x := range lines {
-			lines[x] = strings.Replace(lines[x], "{", ",", -1)
-			lines[x] = strings.Replace(lines[x], "}", "", -1)
-			parts := strings.Split(lines[x], " ")
-			if len(parts) >= 2 {
-				fmt.Printf("%s%s value=%s %d\n", prefix, parts[0], parts[1], date)
+			if !comment.MatchString(lines[x]) {
+				lines[x] = strings.Replace(lines[x], "{", ",", -1)
+				lines[x] = strings.Replace(lines[x], "}", "", -1)
+				parts := strings.Split(lines[x], " ")
+				if len(parts) >= 2 {
+					fmt.Printf("%s%s value=%s %d\n", prefix, parts[0], parts[1], date)
+				}
 			}
 		}
 		return
