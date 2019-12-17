@@ -31,6 +31,8 @@ func getMetrics(url string, prefix string) {
 		fmt.Println("couldn't find valid metrics!")
 		return
 	} else {
+		namespaceCPU := make(map[string]int)
+		namespaceMem := make(map[string]int)
 		comment := regexp.MustCompile(`^#`)
 		lines := strings.Split(string(body), "\n")
 		for x := range lines {
@@ -39,10 +41,34 @@ func getMetrics(url string, prefix string) {
 				lines[x] = strings.Replace(lines[x], "}", "", -1)
 				parts := strings.Split(lines[x], " ")
 				if len(parts) >= 2 {
+					re1 := regexp.MustCompile("pod_namespace=\"(.*)\"")
+					nn := re1.FindStringSubmatch(parts[0])
+					re2 := regexp.MustCompile("kube_metrics_server_pods_(cpu|mem)")
+					typ := re2.FindStringSubmatch(parts[0])
+
 					f, _ := strconv.ParseFloat(parts[1], 64)
+
+					if len(nn) > 0 && len(typ) > 0 {
+
+						if typ[1] == "cpu" {
+							fmt.Printf("here\n")
+							namespaceCPU[nn[1]] += int(f)
+						}
+						if typ[1] == "mem" {
+							namespaceMem[nn[1]] += int(f)
+						}
+					}
+
 					fmt.Printf("%s%s value=%d %d\n", prefix, parts[0], int(f), date)
 				}
 			}
+		}
+
+		for x := range namespaceCPU {
+			fmt.Printf("%skube_state_metrics_namespace_cpu,namespace=%s value=%d %d\n", prefix, x, namespaceCPU[x], date)
+		}
+		for x := range namespaceMem {
+			fmt.Printf("%skube_state_metrics_namespace_mem,namespace=%s value=%d %d\n", prefix, x, namespaceMem[x], date)
 		}
 		return
 	}
