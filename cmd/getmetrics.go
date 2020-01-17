@@ -51,7 +51,6 @@ func getMetrics(url string, prefix string) {
 					if len(nn) > 0 && len(typ) > 0 {
 
 						if typ[1] == "cpu" {
-							fmt.Printf("here\n")
 							namespaceCPU[nn[1]] += int(f)
 						}
 						if typ[1] == "mem" {
